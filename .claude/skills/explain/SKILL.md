@@ -35,10 +35,12 @@ All commands run from the repo root with `uv run vx ...`. Working files go in `b
    - `uv run vx check <slug>` must pass.
    - Start one subagent with fresh context (Agent tool; if that is not available, `claude -p "<prompt>"` from the shell). Give it only the paths to `source.txt`, the page crops, `facts.json`, and `script.json`. Ask for two lists: (a) source facts missing from or wrong in `facts.json`; (b) statements in `say`, `caption`, or `visual` that the source does not support or that change its meaning.
    - Fix every item, rerun `vx check`, and repeat the subagent review until both lists are empty.
+   - Any later change to `say`, `caption`, `visual`, or to wording drawn on screen (labels, tags, chips) needs one more review round before the final render.
 5. Check pronunciation, then make the audio.
    - `uv run vx phonemes <slug>`. It lists every word with the phonemes Kokoro will speak. `guess` means the word was not in Kokoro's dictionary. `dictionary` words can still be wrong: noun/verb pairs ("contrast", "lead"), and medical terms with unusual stress.
    - Read the whole list. For every medical term, drug name, organism, eponym, and noun/verb pair, compare the phonemes with the standard American medical pronunciation.
    - Fix each wrong word in `pronunciations.toml`: `[phonemes]` for a phoneme string (preferred), `[terms]` for abbreviations and symbols that need different words. Add plural and adjective forms as separate entries. Use a two-word key when the fix depends on context ("contrast CT").
+   - An override does not apply to a word that follows a hyphen. For a hyphenated compound, use the whole compound as the key ("5-aminosalicylic").
    - Run `vx phonemes` again and confirm each fix shows as `override` with the intended phonemes.
    - `uv run vx tts <slug>` then `uv run vx timeline <slug>`. This writes one wav per beat, `narration.wav`, `timeline.json`, and `captions.srt`.
 6. Write the scene code for the renderer named in `style.json` (`renderer`).
@@ -46,7 +48,8 @@ All commands run from the repo root with `uv run vx ...`. Working files go in `b
    - Remotion: `build/<slug>/remotion/Video.tsx`, exporting `Video`, built on `remotion/src/kit.tsx` (import path `../../src/kit`).
 7. Render and check layout.
    - `uv run vx render <slug>` then `uv run vx frames <slug>`.
-   - Read every PNG in `build/<slug>/frames-<renderer>/`. Each one is the frame 0.1 s before the beat's audio ends.
+   - Read every PNG in `build/<slug>/frames-<renderer>/` at full size after every render, not only the frames you changed. Each one is the frame 0.1 s before the beat's audio ends.
+   - Fix sparse frames: if the content of a scene ends above y=600, enlarge the drawing or text, or center the content block vertically between y=280 and y=984. No scene should leave the lower half of the frame empty.
    - Fix text overflow, overlap, items outside the safe margin, text smaller than 36 px, and empty frames. Render again.
    - At most 3 passes. After that, report what is still wrong.
 8. `uv run vx done <slug>`. Report: output path, duration, fact count, beat count, and any check that did not pass.
@@ -65,7 +68,8 @@ All commands run from the repo root with `uv run vx ...`. Working files go in `b
 - The last scene shows the citation: `First Aid for the USMLE Step 1 2025, p. <book_page>`.
 - Manim: use `self.text(...)` (Pango `Text`), not `MathTex`. LaTeX is not installed. Use `self.at("<beat id>")` to wait for a beat, `self.place(mobject, x, y, anchor)` for pixel positions from the top-left, `self.check_bounds()` to print items outside the safe area, and `self.finish()` at the end.
 - Remotion: use `<Appear at="<beat id>">`, `useRamp`, `seconds()`, `<Box>`, `<Txt>`, and `<Screen>` from `remotion/src/kit.tsx` (import as `../../src/kit`).
-- Remotion: build the layout from `remotion/src/parts.tsx` (import as `../../src/parts`): `Scene` (title, tag, fade between scenes), `Panel` (left drawing area), `Rows`, `Row`, `CaptionRows`, `Heading`, `Chip`, `Label`, `Draw`, `cap()`, `part()`, curve helpers, and the layout constants. Read that file before writing a scene. Do not edit `kit.tsx` or `parts.tsx` during a topic; put topic-specific components in `build/<slug>/remotion/` and report any helper that should move into the shared files.
+- Remotion: build the layout from `remotion/src/parts.tsx` (import as `../../src/parts`): `Scene` (title, tag, fade between scenes), `Panel` (left drawing area), `Rows`, `Row`, `CaptionRows`, `Heading`, `Chip`, `Card`, `Label`, `Draw`, `Arrow` (inside `Canvas`, a full-frame SVG), `Citation`, `cap()`, `part()`, curve helpers, and the layout constants. Read that file before writing a scene. Do not edit `kit.tsx` or `parts.tsx` during a topic; put topic-specific components in `build/<slug>/remotion/` and report any helper that should move into the shared files.
+- Subscripts and superscripts: use `<sub>`/`<sup>` at 0.7 of the text size inside text of at least 52 px, not Unicode subscript characters.
 - Standard layout: title at x=96, y=96; tag under it; drawing in the left panel (x 96-776, y 280-920); fact rows in the right column (x 840-1824, from y=280). A scene with no useful drawing may use the full width for rows, a table, or a flow diagram.
 - All animation is a function of the current frame. No CSS transitions, no timers.
 - A finished example, if present on this machine: `build/liver-tumors/remotion/Video.tsx`.

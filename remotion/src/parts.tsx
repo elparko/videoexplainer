@@ -77,37 +77,41 @@ const DOT = 18;
 const CAP_HEIGHT = 0.714;
 const ASCENT = 0.952;
 const CONTENT = 1.165;
-const firstLineCapCenter = (px: number) => (px * LINE - px * CONTENT) / 2 + px * ASCENT - (px * CAP_HEIGHT) / 2;
+export const firstLineCapCenter = (px: number) => (px * LINE - px * CONTENT) / 2 + px * ASCENT - (px * CAP_HEIGHT) / 2;
 
-export const Rows = ({ y = 280, children }: { y?: number; children: ReactNode }) => (
-  <Box x={COLUMN_X} y={y} w={COLUMN_W} style={{ display: "flex", flexDirection: "column", gap: ROW_GAP }}>
+type RowsProps = { x?: number; y?: number; w?: number; children: ReactNode };
+
+export const Rows = ({ x = COLUMN_X, y = 280, w = COLUMN_W, children }: RowsProps) => (
+  <Box x={x} y={y} w={w} style={{ display: "flex", flexDirection: "column", gap: ROW_GAP }}>
     {children}
   </Box>
 );
 
-type RowProps = { at: Moment; delay?: number; until?: Moment; color: string; children: ReactNode };
+type RowProps = { at: Moment; delay?: number; until?: Moment; color: string; px?: number; children: ReactNode };
 
-export const Row = ({ at, delay, until, color, children }: RowProps) => (
+export const Row = ({ at, delay, until, color, px = ROW_PX, children }: RowProps) => (
   <Appear at={at} delay={delay} until={until} style={{ position: "relative" }}>
     <div
       style={{
         position: "absolute",
         left: 0,
-        top: firstLineCapCenter(ROW_PX) - DOT / 2,
+        top: firstLineCapCenter(px) - DOT / 2,
         width: DOT,
         height: DOT,
         borderRadius: DOT / 2,
         backgroundColor: colors[color],
       }}
     />
-    <Txt px={ROW_PX} style={{ marginLeft: ROW_TEXT_INDENT }}>{children}</Txt>
+    <Txt px={px} style={{ marginLeft: ROW_TEXT_INDENT }}>{children}</Txt>
   </Appear>
 );
 
-export const CaptionRows = ({ beat, color, until }: { beat: string; color: string; until?: Moment }) => (
+type CaptionRowsProps = { beat: string; color: string; until?: Moment; px?: number };
+
+export const CaptionRows = ({ beat, color, until, px }: CaptionRowsProps) => (
   <>
     {cap(beat).map((line, i) => (
-      <Row key={i} at={beat} delay={i * 0.3} until={until} color={color}>
+      <Row key={i} at={beat} delay={i * 0.3} until={until} color={color} px={px}>
         {line}
       </Row>
     ))}
@@ -226,3 +230,72 @@ export const Draw = ({ d, progress, color, width, opacity = 1 }: DrawProps) =>
       opacity={opacity}
     />
   );
+
+type CardProps = { color: string; w: number; h?: number; title?: string; px?: number; children: ReactNode };
+
+export const Card = ({ color, w, h, title, px = 40, children }: CardProps) => (
+  <div
+    style={{
+      boxSizing: "border-box",
+      width: w,
+      height: h,
+      padding: 24,
+      border: `3px solid ${colors[color]}`,
+      borderRadius: 16,
+      backgroundColor: colors.panel,
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      gap: 8,
+    }}
+  >
+    {title ? <Txt px={px} weight={700} color={color}>{title}</Txt> : null}
+    <Txt px={px}>{children}</Txt>
+  </div>
+);
+
+type ArrowProps = { from: Point; to: Point; progress: number; color: string; width?: number; dashed?: boolean; opacity?: number };
+
+export const Arrow = ({ from, to, progress, color, width = 5, dashed = false, opacity = 1 }: ArrowProps) => {
+  if (progress <= 0) {
+    return null;
+  }
+  const tip: Point = [from[0] + (to[0] - from[0]) * progress, from[1] + (to[1] - from[1]) * progress];
+  const angle = Math.atan2(to[1] - from[1], to[0] - from[0]);
+  const head = width * 3.2;
+  const corner = (side: number): Point => [
+    tip[0] - head * Math.cos(angle) + side * head * 0.6 * Math.sin(angle),
+    tip[1] - head * Math.sin(angle) - side * head * 0.6 * Math.cos(angle),
+  ];
+  const base: Point = [tip[0] - head * Math.cos(angle), tip[1] - head * Math.sin(angle)];
+  return (
+    <g opacity={opacity}>
+      <line
+        x1={from[0]}
+        y1={from[1]}
+        x2={base[0]}
+        y2={base[1]}
+        stroke={colors[color]}
+        strokeWidth={width}
+        strokeDasharray={dashed ? `${width * 2.5} ${width * 2}` : undefined}
+      />
+      <polygon points={[tip, corner(1), corner(-1)].map((point) => point.join(",")).join(" ")} fill={colors[color]} />
+    </g>
+  );
+};
+
+export const Canvas = ({ children }: { children: ReactNode }) => (
+  <svg width={1920} height={1080} viewBox="0 0 1920 1080" style={{ position: "absolute", left: 0, top: 0 }}>
+    {children}
+  </svg>
+);
+
+export const Citation = ({ at }: { at: Moment }) => (
+  <Box x={96} y={984 - 36 * LINE}>
+    <Appear at={at} delay={0.6}>
+      <Txt px={36} color="muted" style={{ marginLeft: edgeShift(36) }}>
+        {`First Aid for the USMLE Step 1 2025, p. ${script.book_page}`}
+      </Txt>
+    </Appear>
+  </Box>
+);
