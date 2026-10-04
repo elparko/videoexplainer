@@ -31,13 +31,19 @@ def make_pipeline(voice):
     return KPipeline(lang_code=voice[0], repo_id="hexgrad/Kokoro-82M")
 
 
+def is_checkable(word):
+    if not any(character.isalpha() for character in word):
+        return False
+    return len(word) > 3 or word.isupper()
+
+
 def word_phonemes(beats, voice, lexicon):
     pipeline = make_pipeline(voice)
     words = {}
     for beat in beats:
         _, tokens = pipeline.g2p(apply_lexicon(beat["say"], lexicon))
         for token in tokens:
-            if token.text.isalpha() and len(token.text) > 3:
+            if is_checkable(token.text):
                 words.setdefault(token.text.lower(), (token.phonemes, getattr(token, "rating", None)))
     return words
 

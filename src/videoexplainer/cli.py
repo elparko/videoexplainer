@@ -81,8 +81,9 @@ def phonemes(slug: str, voice: str = ""):
     script = read_json(BUILD / slug / "script.json")
     lexicon = tts_module.load_lexicon(ROOT / "pronunciations.toml")
     words = tts_module.word_phonemes(coverage.beats(script), voice or load_style()["voice"], lexicon)
+    overrides = {key.lower() for key in lexicon["phonemes"]}
     for word, (spoken, rating) in sorted(words.items()):
-        source = "override" if word in lexicon["phonemes"] else "dictionary" if rating and rating >= 4 else "guess"
+        source = "override" if word in overrides else "dictionary" if rating and rating >= 4 else "guess"
         typer.echo(f"{source:10}  {word:24}  {spoken}")
 
 

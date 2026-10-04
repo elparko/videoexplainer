@@ -28,3 +28,10 @@ def test_phonemes_apply_after_terms_and_never_nest():
 
 def test_load_lexicon_missing_file(tmp_path):
     assert tts.load_lexicon(tmp_path / "none.toml") == lexicon()
+
+
+def test_is_checkable_keeps_hyphenated_words_and_abbreviations():
+    assert tts.is_checkable("Zollinger-Ellison")
+    assert tts.is_checkable("CT")
+    assert not tts.is_checkable("the")
+    assert not tts.is_checkable("12")
