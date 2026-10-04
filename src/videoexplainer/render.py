@@ -7,10 +7,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 REMOTION_DIR = ROOT / "remotion"
 SHARED_FILES = ["timeline.json", "script.json", "topic.json"]
+DEFAULT_OUT = "/Volumes/T7/videoexplainer"
+
+
+def out_dir():
+    path = Path(os.environ.get("VX_OUT", DEFAULT_OUT))
+    if path.is_relative_to("/Volumes") and not Path(*path.parts[:3]).is_mount():
+        raise SystemExit(f"{Path(*path.parts[:3])} is not mounted. Connect the drive or set VX_OUT.")
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def output_path(slug, renderer):
-    return ROOT / "out" / f"{slug}-{renderer}.mp4"
+    return out_dir() / f"{slug}-{renderer}.mp4"
 
 
 def render_manim(build_dir, style):
@@ -70,5 +79,5 @@ def render(slug, renderer):
     silent = render_manim(build_dir, style) if renderer == "manim" else render_remotion(build_dir, style)
     out = output_path(slug, renderer)
     mux(silent, build_dir / "narration.wav", out)
-    shutil.copy(build_dir / "captions.srt", ROOT / "out" / f"{slug}.srt")
+    shutil.copy(build_dir / "captions.srt", out_dir() / f"{slug}.srt")
     return out

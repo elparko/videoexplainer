@@ -22,7 +22,7 @@ Claude Code reads the source, writes the fact list, the script, and the scene co
 | `vx check <slug>` | Fail if a fact is unused, a beat has no speech, or the script is over 4 minutes. |
 | `vx tts <slug>` | One Kokoro wav per beat. Applies `pronunciations.toml`. |
 | `vx timeline <slug>` | `timeline.json`, `narration.wav`, `captions.srt`. |
-| `vx render <slug> --renderer manim\|remotion` | Silent render, then ffmpeg adds narration. Output in `out/`. |
+| `vx render <slug> --renderer manim\|remotion` | Silent render, then ffmpeg adds narration. Output in `/Volumes/T7/videoexplainer/` (override with `VX_OUT`). Stops if the drive is not mounted. |
 | `vx frames <slug> --renderer ...` | One still per beat for the layout check. |
 | `vx done <slug>` | Record the topic in `data/progress.json`. |
 

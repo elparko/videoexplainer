@@ -86,7 +86,7 @@ def timeline(slug: str):
 @app.command()
 def render(slug: str, renderer: str = ""):
     out = render_module.render(slug, renderer or load_style()["renderer"])
-    typer.echo(out.relative_to(ROOT))
+    typer.echo(out)
 
 
 @app.command()
