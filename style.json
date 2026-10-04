@@ -1,0 +1,21 @@
+{
+  "renderer": "manim",
+  "voice": "af_heart",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "margin": 96,
+  "font": "Helvetica Neue",
+  "min_text_px": 36,
+  "colors": {
+    "bg": "#0f1420",
+    "panel": "#1a2233",
+    "text": "#e8ecf1",
+    "muted": "#8b97a8",
+    "blue": "#58c4dd",
+    "green": "#83c167",
+    "yellow": "#f4d35e",
+    "red": "#fc6255",
+    "purple": "#b189e8"
+  }
+}

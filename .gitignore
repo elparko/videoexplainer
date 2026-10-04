@@ -4,3 +4,10 @@ __pycache__/
 .pytest_cache/
 .env
 .DS_Store
+data/
+build/
+out/
+node_modules/
+remotion/topics/
+remotion/public/
+media/
