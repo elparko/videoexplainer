@@ -60,3 +60,7 @@ def test_topic_regions_same_page_and_page_break():
         {"pdf_page": 101, "top": topics.CONTENT_TOP, "bottom": 396},
     ]
     assert topics.topic_regions(items, "c") == [{"pdf_page": 101, "top": 396, "bottom": topics.CONTENT_BOTTOM}]
+
+
+def test_slugify_strips_accents():
+    assert topics.slugify("Ménétrier disease") == "menetrier-disease"

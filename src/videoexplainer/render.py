@@ -1,3 +1,4 @@
+import fcntl
 import json
 import os
 import shutil
@@ -44,18 +45,22 @@ def render_manim(build_dir, style):
 
 
 def render_remotion(build_dir, style):
-    current = REMOTION_DIR / "topics" / "current"
-    shutil.rmtree(current, ignore_errors=True)
-    shutil.copytree(build_dir / "remotion", current)
-    for name in SHARED_FILES:
-        shutil.copy(build_dir / name, current / name)
-    shutil.copy(ROOT / "style.json", current / "style.json")
+    topics_dir = REMOTION_DIR / "topics"
+    topics_dir.mkdir(exist_ok=True)
     silent = build_dir / "remotion-silent.mp4"
-    subprocess.run(
-        ["npx", "remotion", "render", "src/index.ts", "Explainer", str(silent), "--muted", "--log=error"],
-        cwd=REMOTION_DIR,
-        check=True,
-    )
+    with open(topics_dir / ".render.lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        current = topics_dir / "current"
+        shutil.rmtree(current, ignore_errors=True)
+        shutil.copytree(build_dir / "remotion", current)
+        for name in SHARED_FILES:
+            shutil.copy(build_dir / name, current / name)
+        shutil.copy(ROOT / "style.json", current / "style.json")
+        subprocess.run(
+            ["npx", "remotion", "render", "src/index.ts", "Explainer", str(silent), "--muted", "--log=error"],
+            cwd=REMOTION_DIR,
+            check=True,
+        )
     return silent
 
 

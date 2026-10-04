@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import unicodedata
 from pathlib import Path
 
 import pymupdf
@@ -29,6 +30,7 @@ def pdf_path():
 def slugify(title):
     for letter, name in GREEK.items():
         title = title.replace(letter, name)
+    title = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode()
     return re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
 
 
@@ -95,6 +97,8 @@ def build_topics(doc):
         page = doc[pdf_page - 1]
         chapter = page_chapter(page)
         for heading in merge_wrapped(page_heading_lines(page, pdf_page)):
+            if heading["text"].endswith("(continued)"):
+                continue
             topics.append(
                 {
                     "title": heading["text"],
