@@ -8,25 +8,46 @@ SAMPLE_RATE = 24000
 def load_lexicon(path):
     path = Path(path)
     if not path.exists():
-        return {}
-    return tomllib.loads(path.read_text()).get("terms", {})
+        return {"terms": {}, "phonemes": {}}
+    data = tomllib.loads(path.read_text())
+    return {"terms": data.get("terms", {}), "phonemes": data.get("phonemes", {})}
+
+
+def replace_terms(text, table, replacement):
+    for term in sorted(table, key=len, reverse=True):
+        pattern = r"(?<![\w\[-])" + re.escape(term) + r"(?![\w\]-])"
+        text = re.sub(pattern, lambda match: replacement(match.group(0), table[term]), text, flags=re.IGNORECASE)
+    return text
 
 
 def apply_lexicon(text, lexicon):
-    for term in sorted(lexicon, key=len, reverse=True):
-        pattern = r"(?<![\w-])" + re.escape(term) + r"(?![\w-])"
-        text = re.sub(pattern, lexicon[term], text, flags=re.IGNORECASE)
-    return text
+    text = replace_terms(text, lexicon["terms"], lambda word, spoken: spoken)
+    return replace_terms(text, lexicon["phonemes"], lambda word, phonemes: f"[{word}](/{phonemes}/)")
+
+
+def make_pipeline(voice):
+    from kokoro import KPipeline
+
+    return KPipeline(lang_code=voice[0], repo_id="hexgrad/Kokoro-82M")
+
+
+def word_phonemes(beats, voice, lexicon):
+    pipeline = make_pipeline(voice)
+    words = {}
+    for beat in beats:
+        _, tokens = pipeline.g2p(apply_lexicon(beat["say"], lexicon))
+        for token in tokens:
+            if token.text.isalpha() and len(token.text) > 3:
+                words.setdefault(token.text.lower(), (token.phonemes, getattr(token, "rating", None)))
+    return words
 
 
 def synthesize(beats, out_dir, voice, lexicon, speed=1.0):
     import numpy as np
     import soundfile as sf
-    from kokoro import KPipeline
-
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    pipeline = KPipeline(lang_code=voice[0], repo_id="hexgrad/Kokoro-82M")
+    pipeline = make_pipeline(voice)
     paths = []
     for beat in beats:
         text = apply_lexicon(beat["say"], lexicon)

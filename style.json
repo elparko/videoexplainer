@@ -1,5 +1,5 @@
 {
-  "renderer": "manim",
+  "renderer": "remotion",
   "voice": "af_heart",
   "width": 1920,
   "height": 1080,

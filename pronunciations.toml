@@ -5,3 +5,14 @@
 "HCV" = "hepatitis C virus"
 "1°" = "primary"
 "2°" = "secondary"
+
+# Kokoro phoneme strings. A = "ay", I = "eye", O = "oh", W = "ow", T = flapped t, ʤ = "j".
+[phonemes]
+"aspergillus" = "ˌæspəɹʤˈɪləs"
+"hematogenously" = "hˌimətˈɑʤənəsli"
+"angiosarcoma" = "ˌænʤiOsɑɹkˈOmə"
+"arsenic" = "ˈɑɹsənɪk"
+"contrast CT" = "kˈɑntɹæst sˌitˈi"
+"stellate" = "stˈɛlAt"
+"dystrophic" = "dɪstɹˈOfɪk"
+"autoimmune" = "ˌɔTOɪmjˈun"

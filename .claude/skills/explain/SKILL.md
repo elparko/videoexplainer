@@ -34,7 +34,12 @@ All commands run from the repo root with `uv run vx ...`. Working files go in `b
    - `uv run vx check <slug>` must pass.
    - Start one subagent with fresh context. Give it only the paths to `source.txt`, the page crops, `facts.json`, and `script.json`. Ask for two lists: (a) source facts missing from or wrong in `facts.json`; (b) statements in `say`, `caption`, or `visual` that the source does not support or that change its meaning.
    - Fix every item, rerun `vx check`, and repeat the subagent review until both lists are empty.
-5. `uv run vx tts <slug>` then `uv run vx timeline <slug>`. This writes one wav per beat, `narration.wav`, `timeline.json`, and `captions.srt`.
+5. Check pronunciation, then make the audio.
+   - `uv run vx phonemes <slug>`. It lists every word with the phonemes Kokoro will speak. `guess` means the word was not in Kokoro's dictionary. `dictionary` words can still be wrong: noun/verb pairs ("contrast", "lead"), and medical terms with unusual stress.
+   - Read the whole list. For every medical term, drug name, organism, eponym, and noun/verb pair, compare the phonemes with the standard American medical pronunciation.
+   - Fix each wrong word in `pronunciations.toml`: `[phonemes]` for a phoneme string (preferred), `[terms]` for abbreviations and symbols that need different words. Add plural and adjective forms as separate entries. Use a two-word key when the fix depends on context ("contrast CT").
+   - Run `vx phonemes` again and confirm each fix shows as `override` with the intended phonemes.
+   - `uv run vx tts <slug>` then `uv run vx timeline <slug>`. This writes one wav per beat, `narration.wav`, `timeline.json`, and `captions.srt`.
 6. Write the scene code for the renderer named in `style.json` (`renderer`).
    - Manim: `build/<slug>/manim/scene.py`, a class `Explainer(ExplainerScene)` from `videoexplainer.manim_kit`.
    - Remotion: `build/<slug>/remotion/Video.tsx`, exporting `Video`, built on `remotion/src/kit.tsx` (import path `../../src/kit`).
@@ -51,6 +56,9 @@ All commands run from the repo root with `uv run vx ...`. Working files go in `b
 - Colors, font, and margin come from `style.json`. No other colors or fonts.
 - Dark background. One idea per beat. Build diagrams piece by piece. Clear the screen between scenes.
 - Text is at least 36 px at 1920x1080. Everything stays inside the 96 px margin.
+- Label every drawn line, arrow, and shape that stands for a structure or a process. The label is text of at least 36 px placed next to the item, in the item's color, and it appears with the item. A viewer must be able to pause on any frame and name everything drawn. Do not use a line for decoration.
+- A line or arrow starts and ends exactly on the things it connects. Compute its endpoints from the same coordinates used to place those things.
+- Alignment: rows in a column share one left edge. A row's dot is centered on the row's first text line. Chips in a row share one height and one baseline. Use one spacing value per list.
 - Draw original schematic shapes. No figures, photos, or tables from the book.
 - Every fact in the beat's `facts` must be readable on screen or spoken; on-screen wording must not be stronger than the source.
 - The last scene shows the citation: `First Aid for the USMLE Step 1 2025, p. <book_page>`.
