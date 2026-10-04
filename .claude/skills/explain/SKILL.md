@@ -25,6 +25,7 @@ All commands run from the repo root with `uv run vx ...`. Working files go in `b
      ]}
    ]}
    ```
+   - A scene may set `"tag"` (short caps label under the title, for example "BENIGN") and `"color"` (a color name from `style.json`). `"kind": "overview"` hides the scene title for a full-screen opening.
    - One beat is one spoken sentence. `say` is original wording, not copied from the book.
    - Keep the book's strength of claim: "associated with" stays "associated with", "include" stays "include", "may" stays "may".
    - `say` is written for speech: spell out numbers and abbreviations that the voice would misread, or add them to `pronunciations.toml`.
@@ -32,7 +33,7 @@ All commands run from the repo root with `uv run vx ...`. Working files go in `b
    - Target 60-120 seconds at about 150 words per minute. Up to 4 minutes for a long topic. Never drop a fact to save time.
 4. Check the script.
    - `uv run vx check <slug>` must pass.
-   - Start one subagent with fresh context. Give it only the paths to `source.txt`, the page crops, `facts.json`, and `script.json`. Ask for two lists: (a) source facts missing from or wrong in `facts.json`; (b) statements in `say`, `caption`, or `visual` that the source does not support or that change its meaning.
+   - Start one subagent with fresh context (Agent tool; if that is not available, `claude -p "<prompt>"` from the shell). Give it only the paths to `source.txt`, the page crops, `facts.json`, and `script.json`. Ask for two lists: (a) source facts missing from or wrong in `facts.json`; (b) statements in `say`, `caption`, or `visual` that the source does not support or that change its meaning.
    - Fix every item, rerun `vx check`, and repeat the subagent review until both lists are empty.
 5. Check pronunciation, then make the audio.
    - `uv run vx phonemes <slug>`. It lists every word with the phonemes Kokoro will speak. `guess` means the word was not in Kokoro's dictionary. `dictionary` words can still be wrong: noun/verb pairs ("contrast", "lead"), and medical terms with unusual stress.
@@ -63,4 +64,9 @@ All commands run from the repo root with `uv run vx ...`. Working files go in `b
 - Every fact in the beat's `facts` must be readable on screen or spoken; on-screen wording must not be stronger than the source.
 - The last scene shows the citation: `First Aid for the USMLE Step 1 2025, p. <book_page>`.
 - Manim: use `self.text(...)` (Pango `Text`), not `MathTex`. LaTeX is not installed. Use `self.at("<beat id>")` to wait for a beat, `self.place(mobject, x, y, anchor)` for pixel positions from the top-left, `self.check_bounds()` to print items outside the safe area, and `self.finish()` at the end.
-- Remotion: use `<Appear at="<beat id>">`, `useRamp`, `seconds()`, `<Box>`, `<Txt>`, and `<Screen>` from the kit.
+- Remotion: use `<Appear at="<beat id>">`, `useRamp`, `seconds()`, `<Box>`, `<Txt>`, and `<Screen>` from `remotion/src/kit.tsx` (import as `../../src/kit`).
+- Remotion: build the layout from `remotion/src/parts.tsx` (import as `../../src/parts`): `Scene` (title, tag, fade between scenes), `Panel` (left drawing area), `Rows`, `Row`, `CaptionRows`, `Heading`, `Chip`, `Label`, `Draw`, `cap()`, `part()`, curve helpers, and the layout constants. Read that file before writing a scene. Do not edit `kit.tsx` or `parts.tsx` during a topic; put topic-specific components in `build/<slug>/remotion/` and report any helper that should move into the shared files.
+- Standard layout: title at x=96, y=96; tag under it; drawing in the left panel (x 96-776, y 280-920); fact rows in the right column (x 840-1824, from y=280). A scene with no useful drawing may use the full width for rows, a table, or a flow diagram.
+- All animation is a function of the current frame. No CSS transitions, no timers.
+- A finished example, if present on this machine: `build/liver-tumors/remotion/Video.tsx`.
+- Several topics may be in progress at once. Touch only `build/<slug>/` for your topic. `vx render` handles `remotion/topics/current/` and waits its turn.
