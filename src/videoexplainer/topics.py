@@ -38,7 +38,7 @@ def is_heading_line(spans, pdf_page):
     fonts = {span["font"] for span in spans}
     return (
         abs(spans[0]["bbox"][0] - HEADING_X[pdf_page % 2]) <= 6
-        and any(span["font"] in HEADING_FONTS and abs(span["size"] - 10) < 0.05 for span in spans)
+        and any(span["font"] in HEADING_FONTS and abs(span["size"] - 10) < 0.3 for span in spans)
         and "MyriadPro-Semibold" not in fonts
         and len("".join(span["text"] for span in spans).strip()) > 1
     )

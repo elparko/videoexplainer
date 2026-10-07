@@ -25,6 +25,10 @@ def test_heading_line_depends_on_page_parity():
     assert not topics.is_heading_line([span("Liver tumors")], 421)
 
 
+def test_heading_line_accepts_slightly_smaller_headings():
+    assert topics.is_heading_line([span("Lynch syndrome", size=9.74)], 416)
+
+
 def test_heading_line_rejects_figure_labels_and_subtopics():
     assert not topics.is_heading_line([span("A", size=9.0)], 420)
     assert not topics.is_heading_line([span("Week ", font="MyriadPro-Semibold"), span("2", x=110)], 420)
